@@ -14,6 +14,7 @@ test('Simple wallet to wallet transfer with dummy data text', () => {
     receiver: 'erd1lkrrrn3ws9sp854kdpzer9f77eglqpeet3e3k3uxvqxw9p3eq6xqxj43r9',
     value: BigInt('10000000000000000'),
     functionName: 'transfer',
+    transferMessages: [new Uint8Array(Buffer.from("dummyText"))],
   });
 });
 
@@ -32,6 +33,7 @@ test('Smart contract call without arguments', () => {
     value: BigInt('0'),
     functionName: 'myEndpoint',
     functionArgs: [],
+    transferMessages: [],
   });
 });
 
@@ -62,6 +64,7 @@ test('NFT Smart contract call', () => {
         },
       },
     ],
+    transferMessages: [],
   });
 });
 
@@ -99,6 +102,7 @@ test('MultiESDTNFTTransfer', () => {
         },
       },
     ],
+    transferMessages: [],
   });
 });
 
@@ -123,6 +127,7 @@ test('ESDT Transfer', () => {
         },
       },
     ],
+    transferMessages: [],
   });
 });
 
@@ -159,6 +164,7 @@ test('MultiESDTNFTTransfer fungible (with 00 nonce) + meta', () => {
         },
       },
     ],
+    transferMessages: [],
   });
 });
 
@@ -189,5 +195,83 @@ test('MultiESDTNFTTransfer fungibles (00 and missing nonce)', () => {
         },
       },
     ],
+    transferMessages: [],
+  });
+});
+
+test('ESDTTransfer with message', () => {
+  const decoder = new TransactionDecoder();
+  const metadata = decoder.getTransactionMetadata({
+    sender: 'erd1pv3020g75r033shtfzkf9yaf8xx7d76qan94wkraxm4vvqankrtsam2hz7',
+    receiver: 'erd1athw37lnw4t4d7ax9t5x9l4hvfay3qfp0k4ldxgq2wv94ln6vuesqd5mjg',
+    data: 'RVNEVFRyYW5zZmVyQDRjNDE0ZTQ0MmQzNDMwNjYzMjM2NjZAMDI2NWYwYTQ3ZGQ0NGMwMDAwQGFhYWFhYUBiYg==',
+    value: '0',
+  });
+
+  expect(metadata).toEqual<TransactionMetadata>({
+    sender: 'erd1pv3020g75r033shtfzkf9yaf8xx7d76qan94wkraxm4vvqankrtsam2hz7',
+    receiver: 'erd1athw37lnw4t4d7ax9t5x9l4hvfay3qfp0k4ldxgq2wv94ln6vuesqd5mjg',
+    value: BigInt('44239040000000000000'),
+    transfers: [
+      {
+        value: BigInt('44239040000000000000'),
+        properties: {
+          identifier: 'LAND-40f26f',
+        },
+      },
+    ],
+    transferMessages: [new Uint8Array(Buffer.from("aaaaaa")), new Uint8Array(Buffer.from("bb"))],
+  });
+});
+
+test('ESDTNFTTransfer with message', () => {
+  const decoder = new TransactionDecoder();
+  const metadata = decoder.getTransactionMetadata({
+    sender: 'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th',
+    receiver: 'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th',
+    data: 'RVNEVE5GVFRyYW5zZmVyQDRkNGU1OTJkMzM2MTMxNjM2NTY2QDAxQDAxQDgwNDlkNjM5ZTVhNjk4MGQxY2QyMzkyYWJjY2U0MTAyOWNkYTc0YTE1NjM1MjNhMjAyZjA5NjQxY2MyNjE4ZjhAYWFhYWFhYWFhYWFhYWFhYWFhYWFhYUBhYQ==',
+    value: '0',
+  });
+
+  expect(metadata).toEqual<TransactionMetadata>({
+    sender: 'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th',
+    receiver: 'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx',
+    value: BigInt('1'),
+    transfers: [
+      {
+        value: BigInt('1'),
+        properties: {
+          collection: 'MNY-3a1cef',
+          identifier: 'MNY-3a1cef-01',
+        },
+      },
+    ],
+    transferMessages: [new Uint8Array(Buffer.from("aaaaaaaaaaaaaaaaaaaaaa")), new Uint8Array(Buffer.from("aa"))],
+  });
+});
+
+test('MultiESDTNFTTransfer with message', () => {
+  const decoder = new TransactionDecoder();
+  const metadata = decoder.getTransactionMetadata({
+    sender: 'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th',
+    receiver: 'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th',
+    data: 'TXVsdGlFU0RUTkZUVHJhbnNmZXJAODA0OWQ2MzllNWE2OTgwZDFjZDIzOTJhYmNjZTQxMDI5Y2RhNzRhMTU2MzUyM2EyMDJmMDk2NDFjYzI2MThmOEAwMUA0ZDRlNTkyZDMzNjEzMTYzNjU2NkAwMkAwMUBhYWFhYWFhYUBhYQ==',
+    value: '0',
+  });
+
+  expect(metadata).toEqual<TransactionMetadata>({
+    sender: 'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th',
+    receiver: 'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx',
+    value: BigInt('0'),
+    transfers: [
+      {
+        value: BigInt('1'),
+        properties: {
+          collection: 'MNY-3a1cef',
+          identifier: 'MNY-3a1cef-02',
+        },
+      },
+    ],
+    transferMessages: [new Uint8Array(Buffer.from("aaaaaaaa")), new Uint8Array(Buffer.from("aa"))],
   });
 });

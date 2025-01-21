@@ -50,6 +50,7 @@ export class TransactionDecoder {
     if (args.length === 0 && !this.isSmartContract(transaction.receiver)) {
       metadata.functionName = 'transfer';
       metadata.functionArgs = undefined;
+      metadata.transferMessages = dataComponents.map((data) => new Uint8Array(Buffer.from(data)));
     }
 
     if (metadata.functionName === 'relayedTx' && metadata.functionArgs && metadata.functionArgs.length === 1) {
@@ -138,8 +139,12 @@ export class TransactionDecoder {
     result.receiver = receiver;
 
     if (args.length > index) {
-      result.functionName = this.hexToString(args[index++]);
-      result.functionArgs = args.slice(index++);
+      if (this.isSmartContract(receiver)){
+        result.functionName = this.hexToString(args[index++]);
+        result.functionArgs = args.slice(index++);
+      } else {
+        result.transferMessages = args.slice(index).map((arg) => new Uint8Array(Buffer.from(arg)));
+      }
     }
 
     return result;
@@ -178,8 +183,12 @@ export class TransactionDecoder {
     result.value = value;
 
     if (args.length > 4) {
-      result.functionName = this.hexToString(args[4]);
-      result.functionArgs = args.slice(5);
+      if (this.isSmartContract(receiver)){
+        result.functionName = this.hexToString(args[4]);
+        result.functionArgs = args.slice(5);
+      } else {
+        result.transferMessages = args.slice(4).map((arg) => new Uint8Array(Buffer.from(arg)));
+      }
     }
 
     result.transfers = [{
@@ -226,9 +235,15 @@ export class TransactionDecoder {
     result.sender = metadata.sender;
     result.receiver = metadata.receiver;
 
+    const isReceiverSmartContract = this.isSmartContract(result.receiver);
+
     if (args.length > 2) {
-      result.functionName = this.hexToString(args[2]);
-      result.functionArgs = args.slice(3);
+      if (isReceiverSmartContract){
+        result.functionName = this.hexToString(args[2]);
+        result.functionArgs = args.slice(3);
+      } else {
+        result.transferMessages = args.slice(2).map((arg) => new Uint8Array(Buffer.from(arg)));
+      }
     }
 
     result.transfers = [{
@@ -310,6 +325,7 @@ export class TransactionMetadata {
   functionArgs?: string[];
 
   transfers?: TransactionMetadataTransfer[];
+  transferMessages: Uint8Array[] = [];
 }
 
 export class TransactionMetadataTransfer {
